@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
 <meta charset="utf-8"/>
-<title>Golden Zone - Performance Tracker</title>
+<title>Golden Zone - Full History</title>
 <style>
     body { background: #000; color: #fff; font-family: sans-serif; padding: 10px; text-align: center; }
     .main-box { border: 2px solid #ffd700; padding: 15px; border-radius: 12px; background: #0a0a0a; }
@@ -11,6 +11,7 @@
     th, td { border: 1px solid #333; padding: 6px; text-align: center; }
     .w { color: #52c41a; font-weight: bold; }
     .l { color: #ff4d4f; font-weight: bold; }
+    .BIG { color: #ff4d4f; } .SMALL { color: #1a73e8; }
 </style>
 </head>
 <body>
@@ -21,7 +22,7 @@
     <div id="filterCount">0/10 Filters Passed</div>
 </div>
 
-<table>
+<table id="logTable">
     <thead><tr><th>Period</th><th>Pred</th><th>Result</th><th>Status</th></tr></thead>
     <tbody id="logBody"></tbody>
 </table>
@@ -50,14 +51,19 @@
                 let status = (lastPred === actual) ? "WIN" : "LOSS";
                 let tbody = document.getElementById('logBody');
                 let row = tbody.insertRow(0);
-                row.innerHTML = `<td>${lastPeriod.slice(-3)}</td><td>${lastPred}</td><td>${actual}</td><td class="${status==='WIN'?'w':'l'}">${status}</td>`;
-                if(tbody.rows.length > 6) tbody.deleteRow(6);
+                row.innerHTML = `<td>${lastPeriod.slice(-3)}</td><td class="${lastPred}">${lastPred}</td><td>${actual}</td><td class="${status==='WIN'?'w':'l'}">${status}</td>`;
+                
+                // 100 rows ka limit check
+                if(tbody.rows.length > 100) {
+                    tbody.deleteRow(100);
+                }
             }
 
             // Signal Display
             if(passed >= 6) {
                 document.getElementById('signal').innerText = currentPred;
-                document.getElementById('signal').style.color = "#52c41a";
+                document.getElementById('signal').className = currentPred;
+                document.getElementById('signal').style.color = (currentPred === 'BIG' ? '#ff4d4f' : '#1a73e8');
                 lastPred = currentPred;
             } else {
                 document.getElementById('signal').innerText = "NO TRADE";
