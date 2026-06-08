@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8"/>
+<title>Delta Sniper v35.0</title>
+<style>
+body{background:#020205;color:#fff;font-family:sans-serif;padding:15px;text-align:center;}
+.box{background:#111;padding:20px;border-radius:12px;border:2px solid #d4af37;}
+.pred{font-size:45px;font-weight:bold;color:#d4af37;}
+table{width:100%;margin-top:20px;border-collapse:collapse;font-size:12px;}
+th,td{border:1px solid #333;padding:8px;text-align:center;}
+.win{color:#52c41a;font-weight:bold;}.loss{color:#ff4d4f;font-weight:bold;}
+</style>
+</head>
+<body>
+<div class="box">
+    <h2>DELTA SNIPER v35.0</h2>
+    <div id="status">Delta Analysis: Active</div>
+    <div id="pred" class="pred">...</div>
+</div>
+<table>
+  <thead><tr><th>Period</th><th>Result</th><th>Pred</th><th>Status</th></tr></thead>
+  <tbody id="logBody"></tbody>
+</table>
+<script>
+(async function(){
+const API = 'https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json';
+let store = { lastPeriod: null, lastPred: null };
+
+async function tick(){
+    try {
+        const res = await fetch(API + '?t='+Date.now());
+        const j = await res.json();
+        const nums = j.data.list.map(i => parseInt(i.number));
+        const period = j.data.list[0].issueNumber;
+        
+        // --- Delta Logic (Hatke Strategy) ---
+        // Hum dekhte hain pichle do numbers ka difference (Delta)
+        let delta = nums[1] - nums[2]; 
+        
+        // Agar delta positive hai, to trend up hai, hum reverse (Big->Small) karenge
+        // Agar delta negative hai, to trend down hai, hum continue karenge
+        let forcePred = (delta > 0) ? "Small" : "Big";
+
+        if(period !== store.lastPeriod && store.lastPeriod !== null){
+            let actual = (nums[0] >= 5) ? "Big" : "Small";
+            let status = (store.lastPred === actual) ? '<span class="win">WIN</span>' : '<span class="loss">LOSS</span>';
+            let row = document.getElementById('logBody').insertRow(0);
+            row.innerHTML = `<td>${store.lastPeriod}</td><td>${nums[0]}</td><td>${store.lastPred}</td><td>${status}</td>`;
+            if(document.getElementById('logBody').rows.length > 8) document.getElementById('logBody').deleteRow(8);
+        }
+
+        document.getElementById('pred').innerText = forcePred;
+        store.lastPred = forcePred;
+        store.lastPeriod = period;
+    } catch(e){}
+}
+setInterval(tick, 2000);
+tick();
+})();
+</script>
+</body>
+</html>
